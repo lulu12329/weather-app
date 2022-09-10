@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:weather_app/utils/backend.dart';
 import 'package:weather_app/utils/geodata.dart';
+import 'package:weather_app/views/weatherView.dart';
 
 void main() {
   runApp(MyApp());
@@ -31,24 +32,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Position? _currentPosition;
+  Backend backend = new Backend();
+  PositionInformation? posInfo;
 
   @override
   void initState() {
     super.initState();
-    update();
-  }
-
-  void update() async {
-    await updateLocation();
-    //update Data
+    updateLocation();
   }
 
   updateLocation() async {
     Position? pos = await Geodata().getPosition();
-    setState(() {
-      _currentPosition = pos;
-    });
+    if (pos != null)
+      setState(() {
+        posInfo = new PositionInformation(pos);
+      });
   }
 
   @override
@@ -57,8 +55,9 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(),
+      body: RefreshIndicator(
+        onRefresh: () => updateLocation(),
+        child: posInfo != null ? posInfo! : Text("no Position Data"),
       ),
     );
   }

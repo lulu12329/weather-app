@@ -1,13 +1,13 @@
-import 'package:weather_app/utils/geodata.dart';
-import 'package:geolocator/geolocator.dart';
+import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:weather_app/models/weatherData.dart';
 
 class Backend {
   static final Backend _instance = Backend._internal();
   final String serverAddress =
       "https://api.openweathermap.org/data/3.0/onecall?";
-  String token = "5c235c4cca8c7690be31e4c4f4f2e599";
+  String token = "25621aa86a40786ea93e64ee68eb2e2b"; //flutter weather app
   static final http.Client httpClient = http.Client();
 
   Backend._internal();
@@ -16,14 +16,11 @@ class Backend {
     return _instance;
   }
 
-  getWeatherData(double lat, double lon) {
-    return get("lat=$lat&lon=$lon&appid={API $token}");
+  Future<WeatherData> getWeatherData(double lat, double lon) async {
+    http.Response res = await get("lat=$lat&lon=$lon&appid=$token");
+    Map<String, dynamic> decodedBody = json.decode(res.body);
+    return WeatherData.fromJson(decodedBody);
   }
-
-  /* getDataForCurrentPosition() async {
-    Position? position = await Geodata().getPosition();
-    return getWeatherData(position.latitude, position.longitude);
-  } */
 
   Future<http.Response> post(String path, Map<String, dynamic> body) {
     if (token == "") throw new Exception();
@@ -45,10 +42,8 @@ class Backend {
     String address = serverAddress + path;
     Uri uri = Uri.parse(address);
 
-    return await httpClient.get(uri, headers: {
-      HttpHeaders.contentTypeHeader:
-          "application/json" /* ,
-      HttpHeaders.authorizationHeader: token */
-    });
+    var res = await httpClient
+        .get(uri, headers: {HttpHeaders.contentTypeHeader: "application/json"});
+    return res;
   }
 }

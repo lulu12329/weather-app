@@ -11,7 +11,9 @@ class Geodata {
       await checkPermissions();
 
       return getCurrentPosition();
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<Position?> getCurrentPosition() async {
